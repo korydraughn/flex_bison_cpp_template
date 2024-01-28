@@ -1,0 +1,55 @@
+cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
+
+project(
+  project_template_parser
+  VERSION "0.1.0"
+  LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
+
+#add_compile_options(-Wall -Wextra -Werror -Wconversion -Wshadow -Wpedantic)
+#add_compile_options(-Wall -Wextra -Werror -Wshadow -Wpedantic)
+add_compile_options(-Wall -Wextra -Wshadow -Wpedantic)
+
+find_package(FLEX 2.6.1 REQUIRED)
+find_package(BISON 3.0.4 REQUIRED)
+
+set(PROJECT_TEMPLATE_FLEX_LEXER_NAME project_template_lexer)
+set(PROJECT_TEMPLATE_BISON_PARSER_NAME project_template_parser)
+
+FLEX_TARGET(${PROJECT_TEMPLATE_FLEX_LEXER_NAME} dsl/lexer.l ${CMAKE_CURRENT_BINARY_DIR}/lexer.cpp)
+BISON_TARGET(${PROJECT_TEMPLATE_BISON_PARSER_NAME} dsl/parser.y ${CMAKE_CURRENT_BINARY_DIR}/parser.cpp)
+ADD_FLEX_BISON_DEPENDENCY(${PROJECT_TEMPLATE_FLEX_LEXER_NAME} ${PROJECT_TEMPLATE_BISON_PARSER_NAME})
+
+set(PROJECT_TEMPLATE_PARSER_NAME project_template_parser)
+set(PROJECT_TEMPLATE_FLEX_OUTPUTS "FLEX_${PROJECT_TEMPLATE_FLEX_LEXER_NAME}_OUTPUTS")
+set(PROJECT_TEMPLATE_BISON_OUTPUTS "BISON_${PROJECT_TEMPLATE_BISON_PARSER_NAME}_OUTPUTS")
+
+add_executable(
+  ${PROJECT_TEMPLATE_PARSER_NAME}
+  #OBJECT
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/driver.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
+  ${${PROJECT_TEMPLATE_FLEX_OUTPUTS}}
+  ${${PROJECT_TEMPLATE_BISON_OUTPUTS}})
+
+set_target_properties(${PROJECT_TEMPLATE_PARSER_NAME} PROPERTIES INTERFACE_POSITION_INDEPENDENT_CODE TRUE)
+set_target_properties(${PROJECT_TEMPLATE_PARSER_NAME} PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+
+#target_compile_definitions(
+#  ${PROJECT_TEMPLATE_PARSER_NAME}
+#  PRIVATE
+#  PROJECT_TEMPLATE_ENABLE_SYSLOG)
+
+target_include_directories(
+  ${PROJECT_TEMPLATE_PARSER_NAME}
+  PRIVATE
+  ${CMAKE_CURRENT_BINARY_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+#target_link_libraries(
+#  ${PROJECT_TEMPLATE_PARSER_NAME}
+#  PUBLIC
+#  nlohmann_json::nlohmann_json)
