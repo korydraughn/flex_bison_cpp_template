@@ -58,10 +58,30 @@ This option causes make_* functions to be generated for each token kind.
 
 %define api.token.prefix {PROJECT_TEMPLATE_}
 %token
-    VAR "var"
-    IF "if"
+    DEFER
     SEMICOLON ";"
-    EQUALS "="
+    COMMA ","
+    IMPORT
+    VAR
+    CONST
+    FN
+    RETURN
+    IF
+    ELSE
+    LOOP
+    BREAK
+    CONTINUE
+    OP_ASSIGNMENT "="
+    OP_EQUALITY "=="
+    OP_NOT_EQUAL "!="
+    OP_GREATER_THAN_OR_EQUAL ">="
+    OP_GREATER_THAN ">"
+    OP_LESS_THAN_OR_EQUAL "<="
+    OP_LESS_THAN "<"
+    LPAREN "("
+    RPAREN ")"
+    LBRACE "{"
+    RBRACE "}"
 ;
 %token <std::string>
     IDENTIFIER
@@ -104,19 +124,31 @@ program:
 statements:
     statement ";" {}
 |   statements statement ";" {}
+|   statements function_definition {}
+|   statements if_stmt {}
+|   statements loop {}
+|   %empty
 ;
 
 statement:
-    declaration {}
-|   assignment {}
+    import {}
+|   variable_definition {}
+|   variable_assignment {}
+|   BREAK {}
+|   CONTINUE {}
 ;
 
-declaration:
-    "var" name {}
+import:
+    IMPORT name
 ;
 
-assignment:
-    "var" name "=" value {}
+variable_definition:
+    VAR name "=" value {}
+|   CONST name "=" value {}
+;
+
+variable_assignment:
+    name "=" value {}
 ;
 
 name:
@@ -125,6 +157,40 @@ name:
 
 value:
     INTEGER {}
+;
+
+parameters:
+    parameter {}
+|   parameters "," parameter {}
+|   %empty {}
+;
+
+parameter:
+    IDENTIFIER {}
+;
+
+function_definition:
+    FN name "(" parameters ")" "{" statements "}" {}
+|   FN name "(" parameters ")" "{" statements RETURN ";" "}" {}
+|   FN name "(" parameters ")" "{" statements RETURN IDENTIFIER ";" "}" {}
+;
+
+if_stmt:
+    IF "(" boolean_expression ")" "{" statements "}"
+|   IF "(" boolean_expression ")" "{" statements "}" ELSE "{" statements "}"
+;
+
+loop:
+    LOOP "{" statements "}" {}
+;
+
+boolean_expression:
+    IDENTIFIER "==" IDENTIFIER {}
+|   IDENTIFIER "!=" IDENTIFIER {}
+|   IDENTIFIER ">=" IDENTIFIER {}
+|   IDENTIFIER ">"  IDENTIFIER {}
+|   IDENTIFIER "<=" IDENTIFIER {}
+|   IDENTIFIER "<"  IDENTIFIER {}
 ;
 
 %%

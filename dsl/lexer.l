@@ -31,10 +31,30 @@
 %}
 
 [ \t\n]                ;
+import                 return yy::parser::make_IMPORT(loc);
+defer                  return yy::parser::make_DEFER(loc);
 var                    return yy::parser::make_VAR(loc);
+const                  return yy::parser::make_CONST(loc);
 if                     return yy::parser::make_IF(loc);
+else                   return yy::parser::make_ELSE(loc);
+loop                   return yy::parser::make_LOOP(loc);
+break                  return yy::parser::make_BREAK(loc);
+continue               return yy::parser::make_CONTINUE(loc);
+fn                     return yy::parser::make_FN(loc);
+return                 return yy::parser::make_RETURN(loc);
 ";"                    return yy::parser::make_SEMICOLON(loc);
-"="                    return yy::parser::make_EQUALS(loc);
+","                    return yy::parser::make_COMMA(loc);
+"("                    return yy::parser::make_LPAREN(loc);
+")"                    return yy::parser::make_RPAREN(loc);
+"{"                    return yy::parser::make_LBRACE(loc);
+"}"                    return yy::parser::make_RBRACE(loc);
+"="                    return yy::parser::make_OP_ASSIGNMENT(loc);
+"=="                   return yy::parser::make_OP_EQUALITY(loc);
+"!="                   return yy::parser::make_OP_NOT_EQUAL(loc);
+">="                   return yy::parser::make_OP_GREATER_THAN_OR_EQUAL(loc);
+">"                    return yy::parser::make_OP_GREATER_THAN(loc);
+"<="                   return yy::parser::make_OP_LESS_THAN_OR_EQUAL(loc);
+"<"                    return yy::parser::make_OP_LESS_THAN(loc);
 -?[0-9]+               return yy::parser::make_INTEGER(YYText(), loc);
 [_a-zA-Z][a-zA-Z0-9_]* return yy::parser::make_IDENTIFIER(YYText(), loc);
 .                      throw yy::parser::syntax_error{loc, std::string{"bad character: "} + YYText()};
