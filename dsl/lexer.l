@@ -30,7 +30,8 @@
     loc.step();
 %}
 
-[ \t\n]                ;
+[ \t]+                 loc.step();
+\n+                    loc.lines(YYLeng()); loc.step();
 import                 return yy::parser::make_IMPORT(loc);
 defer                  return yy::parser::make_DEFER(loc);
 var                    return yy::parser::make_VAR(loc);

@@ -37,6 +37,7 @@ This option causes make_* functions to be generated for each token kind.
 
 /* Code to be included in the parser's implementation file. */
 %code requires {
+    #include <sstream>
     #include <string>
     #include <variant>
     #include <vector>
@@ -134,8 +135,12 @@ statement:
     import {}
 |   variable_definition {}
 |   variable_assignment {}
+|   function_call {}
 |   BREAK {}
 |   CONTINUE {}
+|   RETURN {}
+|   RETURN value {}
+|   RETURN function_call {}
 ;
 
 import:
@@ -144,11 +149,14 @@ import:
 
 variable_definition:
     VAR name "=" value {}
+|   VAR name "=" function_call {}
 |   CONST name "=" value {}
+|   CONST name "=" function_call {}
 ;
 
 variable_assignment:
     name "=" value {}
+|   name "=" function_call {}
 ;
 
 name:
@@ -157,6 +165,7 @@ name:
 
 value:
     INTEGER {}
+|   IDENTIFIER {}
 ;
 
 parameters:
@@ -169,15 +178,29 @@ parameter:
     IDENTIFIER {}
 ;
 
+arguments:
+    argument {}
+|   arguments "," argument {}
+|   %empty {}
+;
+
+argument:
+    IDENTIFIER {}
+|   INTEGER {}
+;
+
 function_definition:
     FN name "(" parameters ")" "{" statements "}" {}
-|   FN name "(" parameters ")" "{" statements RETURN ";" "}" {}
-|   FN name "(" parameters ")" "{" statements RETURN IDENTIFIER ";" "}" {}
+;
+
+function_call:
+    name "(" arguments ")" {}
 ;
 
 if_stmt:
     IF "(" boolean_expression ")" "{" statements "}"
 |   IF "(" boolean_expression ")" "{" statements "}" ELSE "{" statements "}"
+|   IF "(" boolean_expression ")" "{" statements "}" ELSE if_stmt
 ;
 
 loop:
@@ -197,10 +220,13 @@ boolean_expression:
 
 auto yy::parser::error(const yy::location& _loc, const std::string& _msg) -> void
 {
-    std::string s = _msg;
-    s += " at position ";
-    s += std::to_string(_loc.begin.column);
-    throw std::invalid_argument{s};
+    //std::string s = _msg;
+    //s += " at line ";
+    //s += _loc;
+    //s += std::to_string(_loc.begin.column);
+    std::stringstream ss;
+    ss << _loc << ": " << _msg;
+    throw std::invalid_argument{ss.str()};
 } // yy::parser::error
 
 auto yylex(project_template::driver& drv) -> yy::parser::symbol_type
